@@ -118,7 +118,7 @@ This repository also includes a sample code "_vectfit_testing.py_", with some te
  * Fitting of a scalar and artificial frequency domain function
  * 18th order fitting of a two-dimentional frequency response F(s)
  * Fitting of frequency domain samples imported from the measured frequency response of a transformer. **TRANSF_DATA.csv** is needed
- * Element wise approximation of an admitance matrix computed from an equivalent power distribution network. **SYSADMITANCE_DATA.csv** is needed. For more details see[^4]
+ * Element wise approximation of an admitance matrix computed from an equivalent power distribution network. **SYSADMITANCE_DATA.csv** is needed. For more details see[^2]
 
 In the following figures vector fitting results for some test cases are shown:
 
