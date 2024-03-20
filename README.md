@@ -4,7 +4,7 @@ _vectfit3.py_ is the implementation of the Fast Relaxed Vector Fitting algortihm
 
 The pourpose of this algorithm is to compute a rational approximation from tabuled data in the frequency domain for scalar or vectorized problems. The resulting model can be expressed in either state-space form or pole-residue form. 
 
-This module was created for anyone who needs to use vector fitting algorithm in a python project, however **embedding this module in any commercial software is strictly prohibited**, and if it is used **in scientific work, publications[^1],[^3] and[^4] must be referenced**. Aditionally _vectfit3.py_ is a complement for the _LineParameters program_, a personal and academic project in development, where propagation and characteristic admitance matrixes of frequency dependent transmission lines and cables must be fitted prior to build a time domain model for electromagnetic transients simulations. Such as in the previous case, must of vector fitting applications involves the synthesis of rational models for power systems elements, electronic components or equivalent circuits. 
+This module was created for anyone who needs to use vector fitting algorithm in a python project, however **embedding this module in any commercial software is strictly prohibited**, and if it is used **in scientific work, publications[^1],[^2] and[^3] must be referenced**. Aditionally _vectfit3.py_ is a complement for the _LineParameters program_, a personal and academic project in development, where propagation and characteristic admitance matrixes of frequency dependent transmission lines and cables must be fitted prior to build a time domain model for electromagnetic transients simulations. Such as in the previous case, must of vector fitting applications involves the synthesis of rational models for power systems elements, electronic components or equivalent circuits. 
 
 ## Vector Fitting Algorithm
 
@@ -26,12 +26,12 @@ The vector fitting function has many options that can be modified via _opts_ dic
 * **"lowert_mat"**: _type=bool_. Indicates when $F(s)$ samples belong to a lower triangular matrix (symmetric problem).
 * **"realx"** _type=bool_. Enables vector fitting with relaxed non triviality.
 * **"stable"**: _type=bool_. Enables stable poles enforcement.
-* **"asymp"**: _type=int_, value=1, 2 or 3. Produces [D=0; E=0], [D!=0; E=0] or [D!=0; E!=0] respectively [4].
+* **"asymp"**: _type=int_, value=1, 2 or 3. Produces [D=0; E=0], [D!=0; E=0] or [D!=0; E!=0] respectively[^4].
 * **"skip_pole"**: _type=bool_. Disables pole identification omission.
 * **"skip_res"**: _type=bool_.: Disables residue identification omission.
-* **"cmplx_ss"**: _type=bool_. Produces complex or real state space model [4]
+* **"cmplx_ss"**: _type=bool_. Produces complex or real state space model[^4]
 * **"spy1"**: _type=bool_. Excludes firts stage of vector fitting plot in the results.
-* **"spy2"**: _type=bool_. Enables magnitude plot for fitting of f(s) in the results.
+* **"spy2"**: _type=bool_. Enables magnitude plot for fitting of $f(s)$ in the results.
 * **"logx"**: _type=bool_. Enables logarithmic axis for x in the graphs.
 * **"logy"**: _type=bool_. Enables logarithmic axis for y in the graphs.
 * **"errplot"**: _type=bool_. Includes relative error graphs in the results.
@@ -44,9 +44,9 @@ Default options of vector fitting are already defined into vectfit3.py module. T
         "lowert_mat" : False, # F(s) samples belong to a full matrix
         "relax"      : True,  # Use vector fitting with relaxed non triviality
         "stable"     : True,  # Enforce stable poles
-        "asymp"      : 2,     # Include only D in fitting (not E). See [4]
+        "asymp"      : 2,     # Include only D in fitting (not E).
         "skip_pole"  : False, # Do NOT skip pole identification
-        "skip_res"   : False, # Do NOT skip residues identification (C,D,E). See [4]
+        "skip_res"   : False, # Do NOT skip residues identification (C,D,E).
         "cmplx_ss"   : True,  # Create complex state space model
         "spy1"       : False, # No plotting for firts stage of vector fitting
         "spy2"       : True,  # Create magnitude plot for fitting of f(s)
@@ -76,7 +76,7 @@ The input arguments are:
 * _f_ = $F(s)$ samples of the frequency domain function "1Dim or NDdim" to be fitted. _numpy.array_ of dimentions [Nc x N]. Nc is the number of elements and N is the number of samples
 * _s_ = Complex frequency points of evaluation. _numpy.array_ of lenght [N]
 * _poles_ = Initial search poles. _numpy.array_ if lenght [n]. n is the order of aproximation
-* _weights_ = priority of each frequency sample in the process. _numpy.array_ of lenght [N] or shape [Nc x N] according to the weighting strategy used[^2]
+* _weights_ = priority of each frequency sample in the process. _numpy.array_ of lenght [N] or shape [Nc x N] according to the weighting strategy used[^4]
 * _opts_ = (optional) dictionary with the modifiers to change the default configuration of the algorithm
 
 The function returns a tuple with the following items:
@@ -118,7 +118,7 @@ This repository also includes a sample code "_vectfit_testing.py_", with some te
  * Fitting of a scalar and artificial frequency domain function
  * 18th order fitting of a two-dimentional frequency response F(s)
  * Fitting of frequency domain samples imported from the measured frequency response of a transformer. **TRANSF_DATA.csv** is needed
- * Element wise approximation of an admitance matrix computed from an equivalent power distribution network. **SYSADMITANCE_DATA.csv** is needed. For more details see[^2]
+ * Element wise approximation of an admitance matrix computed from an equivalent power distribution network. **SYSADMITANCE_DATA.csv** is needed. For more details see[^4]
 
 In the following figures vector fitting results for some test cases are shown:
 
@@ -156,13 +156,12 @@ To contribute, give suggestions or report any bug please contact me:
 ## References
  
 [^1]: B. Gustavsen and A. Semlyen, "Rational approximation of frequency domain responses by Vector Fitting", IEEE Trans. Power Delivery, vol. 14, no. 3, pp. 1052-1061, July 1999.
-
-[^2]: B. Gustavsen, "User's Guide for vectfit3.m (Fast, Relaxed Vector fitting)", SINTEF Energy Research, N-7465 Trondheim, Norway, 2008. Aviable online: https://www.sintef.no/en/software/vector-fitting/downloads/#menu accesed on: 2/2/2024
         
-[^3]: B. Gustavsen, "Improving the pole relocating properties of vector fitting", IEEE Trans. Power Delivery, vol. 21, no. 3, pp. 1587-1592, July 2006.
+[^2]: B. Gustavsen, "Improving the pole relocating properties of vector fitting", IEEE Trans. Power Delivery, vol. 21, no. 3, pp. 1587-1592, July 2006.
         
-[^4]: D. Deschrijver, M. Mrozowski, T. Dhaene, and D. De Zutter, "Macromodeling of Multiport Systems Using a Fast Implementation of the Vector Fitting Method", IEEE Microwave and Wireless Components Letters, vol. 18, no. 6, pp. 383-385, June 2008.
+[^3]: D. Deschrijver, M. Mrozowski, T. Dhaene, and D. De Zutter, "Macromodeling of Multiport Systems Using a Fast Implementation of the Vector Fitting Method", IEEE Microwave and Wireless Components Letters, vol. 18, no. 6, pp. 383-385, June 2008.
 
+[^4]: B. Gustavsen, "User's Guide for vectfit3.m (Fast, Relaxed Vector fitting)", SINTEF Energy Research, N-7465 Trondheim, Norway, 2008. Aviable online: https://www.sintef.no/en/software/vector-fitting/downloads/#menu accesed on: 2/2/2024
 
 
 
