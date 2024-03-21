@@ -71,12 +71,12 @@ opts={
     "skip_pole"  : False, # Do NOT skip pole identification
     "skip_res"   : False, # Do NOT skip residues identification (C,D,E). See [4]
     "cmplx_ss"   : True,  # Create complex state space model
-    "spy1"       : False, # No plotting for firts stage of vector fitting
+    "spy1"       : False, # No plotting for first stage of vector fitting
     "spy2"       : True,  # Create magnitude plot for fitting of f(s)
     "logx"       : True,  # Use logarithmic axis for x
     "logy"       : True,  # Use logarithmic axis for y
     "errplot"    : True,  # Include deviation in magnitude plot
-    "phaseplot"  : False, # Explude plot of pahse angle
+    "phaseplot"  : False, # Exclude plot of phase angle
     "legend"     : True,  # Do include legends in plots
     }
 
@@ -345,7 +345,7 @@ def buildSER(Ac,Br,Cc,Dr,Er,cmplx_ss,lowert_mat=False):
 
 # * ----------------------------------------------------------  main vectfit3 function ---------------------------------------------------------- *
 
-def vecfit(F,s,poles,weights,opts=opts):
+def vectfit(F,s,poles,weights,opts=opts):
     """ 
     vectfit(): Function to compute a rational aproximation in the frequency domain with the 
     Fast Relaxed Vector Fitting algorithm. Should be used recursively to achieve the best fit.
@@ -366,18 +366,18 @@ def vecfit(F,s,poles,weights,opts=opts):
             into account the following value options:
             
                 "lowert_mat" <- (bool): Indicates when F(s) samples belong to a lower triangular matrix (symmetric problem)
-                "realx"      <- (bool): Enable vector fitting with relaxed non triviality
+                "realx"      <- (bool): Enable vector fitting with relaxed nontriviality
                 "stable"     <- (bool): Enable stable poles enforcement
                 "asymp"      <- (1, 2 or 3): Produce [D=0; E=0], [D!=0; E=0] or [D!=0; E!=0] respectively [4]
                 "skip_pole"  <- (bool): Disable pole identification omission
                 "skip_res"   <- (bool): Disable residue identification omission
                 "cmplx_ss"   <- (bool): Produce complex or real state space model [4]
-                "spy1"       <- (bool): Exclude firts stage of vector fitting plot in the results
+                "spy1"       <- (bool): Exclude first stage of vector fitting plot in the results
                 "spy2"       <- (bool): Enable magnitude plot for fitting of f(s) in the results
                 "logx"       <- (bool): Enable logarithmic axis for x in the graphs
                 "logy"       <- (bool): Enable logarithmic axis for y in the graphs
                 "errplot"    <- (bool): Include logarithmic error graph in the results
-                "phaseplot"  <- (bool): Exclude plot of pahse angle
+                "phaseplot"  <- (bool): Exclude plot of phase angle
                 "legend"     <- (bool): Include legends in plots
     
     Output variables. linked as a tuple

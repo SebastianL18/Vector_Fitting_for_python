@@ -1,6 +1,6 @@
 ### Sample code to test Vector Fitting algorthm implemented in Python by Sebastian Loaiza ###
 
-from vectfit3 import vecfit        # Vector Fitting algorithm imported from its external module vectfit3.py
+from vectfit3 import vectfit        # Vector Fitting algorithm imported from its external module vectfit3.py
 import numpy as np
 import pandas as pd
 from scipy.constants import pi
@@ -43,7 +43,7 @@ if test==1:
     # Remaining options by default
 
     print("\n * Applying vector fitting...")
-    (SER,poles,rmserr,fit)=vecfit(f,s,poles,weights,opts)
+    (SER,poles,rmserr,fit)=vectfit(f,s,poles,weights,opts)
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
     
@@ -118,7 +118,7 @@ elif test==2:
         if itr==Niter-1:
             opts["skip_res"]=False #residue computation in final iteration
             opts["spy2"]=True      #enabling graphs for the results
-        (SER,poles,rmserr,fit)=vecfit(F,s,poles,weights,opts)
+        (SER,poles,rmserr,fit)=vectfit(F,s,poles,weights,opts)
         print("     ...",itr+1," iterations applied")
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
@@ -166,7 +166,7 @@ elif test==3:
     for itr in range(Niter):
         if itr==Niter-1:
             opts["spy2"]=True      #enabling graphs for the results
-        (SER,poles,rmserr,fit)=vecfit(f,s,poles,weights,opts)
+        (SER,poles,rmserr,fit)=vectfit(f,s,poles,weights,opts)
         print("     ...",itr+1," iterations applied")
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
@@ -194,7 +194,7 @@ elif test==3:
     for itr in range(Niter):
         if itr==Niter-1:
             opts["spy2"]=True      #enabling graphs for the results
-        (SER,poles,rmserr,fit)=vecfit(f,s,poles,weights,opts)
+        (SER,poles,rmserr,fit)=vectfit(f,s,poles,weights,opts)
         print("     ...",itr+1," iterations applied")
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
@@ -265,7 +265,7 @@ elif test==4:
         if itr==Niter-1:
             #opts["spy2"]=True       #enabling graphs for the results
             opts["skip_res"]=False  #enabling residue computation in the final iteration
-        (SER,poles,rmserr,fit)=vecfit(g,s,poles,weights_g,opts)
+        (SER,poles,rmserr,fit)=vectfit(g,s,poles,weights_g,opts)
         print("     ...",itr+1," iterations applied")
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nInitial poles computed from weighted column sum of Y(s):\n",poles)
@@ -279,7 +279,7 @@ elif test==4:
         if itr==Niter-1:
             opts["spy2"]=True       #enabling graphs for the results
             opts["skip_res"]=False  #enabling residue computation in the final iteration
-        (SER,poles,rmserr,fit)=vecfit(F,s,poles,weights,opts)
+        (SER,poles,rmserr,fit)=vectfit(F,s,poles,weights,opts)
         print("     ...",itr+1," iterations applied")
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
