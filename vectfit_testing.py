@@ -7,11 +7,11 @@ from scipy.constants import pi
 
 # Example to be applied:
 # 1. Scalar and artificial frequency domain function f(s)
-# 2. 18th order frequency response F(s) of two dimentions
+# 2. 18th order approximation of a frequency response F(s) of two dimentions
 # 3. Escalar measured response of a transformer 
 # 4. Elementwise aproximation of a 6x6 admitance matrix Y(s)
 
-test=4 # <- Desired test
+test=1 # <- Test case selection
 
 if test==1:
     print("Test 1: Scalar and artificial frequency domain function f(s)") # -------------------------------------------------------------------- #
