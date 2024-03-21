@@ -1,16 +1,16 @@
 # Fast Relaxed Vector Fitting for Python
 
-_vectfit3.py_ is the implementation of the Fast Relaxed Vector Fitting algortihm in python. This algorithm was originaly developed by B. Gustavsen[^1] and the original code was written in Matlab eviroment, which is available in the [SINTEF's web page](https://www.sintef.no/en/software/vector-fitting/downloads/#menu). 
+_vectfit3.py_ is the implementation of the Fast Relaxed Vector Fitting algorithm in python. This algorithm was originally developed by B. Gustavsen and A. Semlyem [^1] and the original code was written in MATLAB environment, which is available at the [SINTEF's web page](https://www.sintef.no/en/software/vector-fitting/downloads/#menu). 
 
-The pourpose of this algorithm is to compute a rational approximation from tabuled data in the frequency domain for scalar or vectorized problems. The resulting model can be expressed in either state-space form or pole-residue form. 
+The purpose of this algorithm is to compute a rational approximation from tabulated data in the frequency domain for scalar or vector problems. The resulting model can be expressed in either state-space form or pole-residue form. 
 
-This module was created for anyone who needs to use vector fitting algorithm in a python project, however **embedding this module in any commercial software is strictly prohibited**, and if it is used **in scientific work, publications[^1],[^2] and[^3] must be referenced**. Aditionally _vectfit3.py_ is a complement for the _LineParameters program_, a personal and academic project in development, where propagation and characteristic admitance matrixes of frequency dependent transmission lines and cables must be fitted prior to build a time domain model for electromagnetic transients simulations. Such as in the previous case, must of vector fitting applications involves the synthesis of rational models for power systems elements, electronic components or equivalent circuits. 
+This module was created for anyone who needs to use vector fitting algorithm in a python project, however **embedding this module in any commercial software is strictly prohibited**, and if it is used **in scientific work, publications[^1],[^2] and[^3] must be referenced**. Additionally _vectfit3.py_ is a complement for the _LineParameters program_, a personal and academic project in development, where propagation and characteristic admittance matrixes of frequency dependent transmission lines and cables must be fitted prior to build a time domain model for electromagnetic transients simulations. Such as in the previous case, must of vector fitting applications involves the synthesis of rational models for power systems elements, electronic components, or equivalent circuits. 
 
 ## Vector Fitting Algorithm
 
-The idea behind vector fitting comes from the following equation:
+The idea behind vector fitting comes from the concept that any frequency domain function can be approximated as the ratio of two polynomials and that ratio can be rewritten as a sum of partial fractions. Hence, the fitting of a collection of frequency domain samples $F(s)$ can be expressed as:
 ![vf_eq1](https://github.com/SebastianL18/vectfit3_for_python/assets/144065519/cb6f269c-a06e-47f0-b66a-45ddc6dddd9c)
-where $F(s)$ are the frequency domain samples to be fitted, $s$ is an array with the complex frequency points of evaluation for $F(s)$, $p_k$ are a set of $n$ single poles and $R_k$ are a set of $n$ residues matrixes. As terms $p_k$ are scalars and $R_k$ are matrixes, the approximation is formulated by using common poles for all elements to fit and individual residues, therefore if $F(s)$ is scalar, $R_k$ results scalar as well. Terms $d$ and $e$ are constants and proportional parameters and are optional. 
+where $s$ is an array with the complex frequency points of evaluation for $F(s)$, $p_k$ are a set of $n$ single poles and $R_k$ are a set of $n$ residues matrixes. As terms $p_k$ are scalars and $R_k$ are matrixes, the approximation is formulated by using common poles for all elements to fit and individual residues, therefore if $F(s)$ is scalar, $R_k$ results scalar as well. Terms $d$ and $e$ are constants and proportional parameters and are optional. 
 
 The fitting process is divided in two stages, the poles identification and the resiudues identification. The poles identification process begins with a set of starting poles and the evaluation of (1). Then, an overdeterminated linear equation system is formulated. This system is solved as a least-squares problem and its solution gives the residues of an auxiliar function called $sigma$. Finally, the new poles are computed by finding the asociated zeros of $sigma$. For the residues identification those new poles are used to build another overdeterminated equations systems to be solved as a least-squares problem in order to obtain the residues of $F(s)$. For more details see[^1]
 
@@ -149,7 +149,7 @@ Nowadays, some final details in _vectfit3.py_ are still in progress:
 
 To contribute, give suggestions or report any bug please contact me:
  * Sebastian Loaiza Elejalde
-    - _Doctoral Student in Power Systems_
+    - _Dsc Student in Power Systems_
     - sebloel18@gmail.com 📬
     - sebastian.loaiza@cinvestav.mx 📬
 
