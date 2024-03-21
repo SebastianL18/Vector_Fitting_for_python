@@ -197,7 +197,7 @@ def sortPoles(poles):
     return np.append(realpoles,complexpoles)
 
 # vectfit() subroutine.
-def vecfitPlot(F,fit,s,opts,initialState=False):
+def vectfitPlot(F,fit,s,opts,initialState=False):
     """Function to plot vector fitting results. 
        The number of graphs that are displayed varies in function of opts configuration
        
@@ -581,7 +581,7 @@ def vectfit(F,s,poles,weights,opts=opts):
             opts_temp=opts
             opts_temp["errplot"]=False
             opts_temp["phaseplot"]=False
-            vecfitPlot(F,sigma,s,opts_temp,True)
+            vectfitPlot(F,sigma,s,opts_temp,True)
         # Calculating the zeros for sigma
         m=0 #auxiliar counter
         for k in range(n):
@@ -752,7 +752,7 @@ def vectfit(F,s,poles,weights,opts=opts):
         # - Graphs generation for vector fitting results:
         if opts["spy2"]:
             print("\nvectfit3::spy2_Enabled::Building and showing graphs for the results...")
-            vecfitPlot(F,fit,s,opts)
+            vectfitPlot(F,fit,s,opts)
     #...end of residue identification process
     
     # - Building the state-space model
