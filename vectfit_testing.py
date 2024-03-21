@@ -126,7 +126,7 @@ elif test==2:
 elif test==3:
     print("Test 3: Escalar measured response of a transformer") # ------------------------------------------------------------------------------ #
     # Importing measured data from a .csv file (TRANSF_DATA.csv)
-    csv_path=r"C:\Users\Sebastian\OneDrive - CINVESTAV\Estudios de Doctorado\code Tests\Python_vectfit_testing\TRANSF_DATA.csv" #local path!
+    csv_path=r"C:\Users\Sebastian\Documents\GitHub\Vector_Fitting_for_python\TRANSF_DATA.csv" #local path! Update with your own path
     Mdata=pd.read_csv(csv_path)                         # Measured data
     Mdata=Mdata.to_numpy()                              # Data transfered into a numpy array
     f=Mdata[:160,0]*np.exp(1j*Mdata[:160,1]*pi/180)     # f(s) samples computation. *Just 160 samples are taken
@@ -202,7 +202,7 @@ elif test==3:
 elif test==4:
     print("Test 4: Elementwise aproximation of a 6x6 admitance matrix") # --------------------------------------------------------------------------------- #
     # Importing measured data from a .csv file (SYSADMITANCE_DATA.csv)
-    csv_path=r"C:\Users\Sebastian\OneDrive - CINVESTAV\Estudios de Doctorado\code Tests\Python_vectfit_testing\SYSADMITANCE_DATA.csv" #local path!
+    csv_path=r"C:\Users\Sebastian\Documents\GitHub\Vector_Fitting_for_python\SYSADMITANCE_DATA.csv" #local path! Update with your own path
     Mdata=pd.read_csv(csv_path)                         # Measured data
     Mdata=np.ravel(Mdata.to_numpy())                    # Data transfered into a numpy array
     N=int(Mdata[0])                                     # Number of frequency samples
