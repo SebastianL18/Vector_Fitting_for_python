@@ -82,21 +82,6 @@ opts={
 
 ### ----------------------------------------------------------------- Functions --------------------------------------------------------------- ###
 
-def buildPOLRES(SER):
-    """Function to convert the state-space model previously computed by vectfit to a poles and residues model
-        *Returns a tuple with:
-            - R: residue matrixes stacked as a 3D array of shape [Ny x Ny x n]. Ny is the matrix function size and n the aproximation order
-            - p: common poles set to fit the matrix function. Its lenght is [n].
-    """
-    # state-space model matrixes in SER:
-    A=SER["A"]
-    B=SER["B"]
-    C=SER["C"]
-    n=A.shape[0]   # order of aproximation
-    if SER["symmData"]:
-        # Data needs to be resized to a full matrix representation instead of lower trinagular matrix representation
-        Nc_red=C.size # reduced number of elements fitted
-
 # vectfit() subroutine.
 def opts_errorCheck(opts):
     """Fucntion to check any configuration error into opts dictionary.
@@ -170,7 +155,7 @@ def identifyPoles(LAMBD):
 
 # vectfit() subroutine.
 def sortPoles(poles):
-    """Fucntion to sort the poles obtained in the poles identification process.
+    """Function to sort the poles obtained in the poles identification process.
        the poles array is sorted by magnitud in asending order, real poles go first and
        for each pair of complex conjugated poles, the one with positive imaginary is placed first
         *Returns a complex array with the required poles arrangement"""      
@@ -342,6 +327,93 @@ def buildSER(Ac,Br,Cc,Dr,Er,cmplx_ss,lowert_mat=False):
         SER["C"]=Cr
         SER["cmplxType"]=False
     return SER
+
+# build_RES() subroutine.
+def tri2full(SER, real2cmplx=False):
+    """Function to transform data structure of the matrixes in SER from its default representation (lower trinagular and element-wise) to a full matrix representation.
+        vectfit() function works with element-wise data, therefore if data comes from a matrix problem,  
+        *Returns a new SER with modified shapes:
+            - A shape [n x n] => [Ny*n x Ny*n] for Ny as the original dimentions of the fitted matrix and n as the order of aproximation
+            - B shape [n x 1] => [Ny*n x Ny]
+            - C shape [Nc x n] => [Ny x Ny*n] for Nc as the number fitted elements (organized element-wise)
+            - D shape [Nc x 1] => [Ny x Ny]
+            - E shape [Nc x 1] => [Ny x Ny]
+    """
+    A=SER["A"]
+    B=SER["B"]
+    C=SER["C"]
+    D=SER["D"]
+    E=SER["E"]
+    if real2cmplx and A.dtype==np.float64: # Real to complex transformation is required
+        # Complex versions of A and C matrixes:
+        Ac=np.zeros(A.shape, dtype=np.complex128)
+        Cc=np.zeros(C.shape, dtype=np.complex128)
+        # For complex poles B is a vector of ones:
+        B=np.ones(B.shape, dtype=np.float64)
+        for m in range(A.shape[0]-1):
+            if A[m,m+1]!=0: #case for complex poles
+                Ac[m,m]=A[m,m]+1j*A[m,m+1]          #reference pole 
+                Ac[m+1,m+1]=A[m+1,m+1]-1j*A[m,m+1]  #conjugated pole
+                #ERROR BUILDING C complex
+                Cc[:,m]=C[:,m]+1j*C[:,m+1]          #Reference C value
+                Cc[:,m+1]=np.conj(Cc[:,m])          #Conjugated C value
+            else: #case pure real poles 
+                Ac[m,m]=A[m,m]
+                Cc[:,m]=C[:,m]
+        #Updating A and C with their complex forms:
+        A=Ac
+        C=Cc
+    # Unzip process parameters:
+    n=B.shape[0]    # Order of approximation
+    Nc=C.shape[0]   # Number of different elements (lower trinagular matrix)
+    sum=0           # Sum counter
+    Ny=0            # Shape of the full unzipped matrix function
+    while sum<Nc:
+        Ny+=1
+        sum+=Ny
+    # Full versions of the space-state system
+    Af=np.zeros((Ny*n,Ny*n), dtype=A.dtype)
+    Bf=np.zeros((Ny*n,Ny), dtype=np.float64)
+    Cf=np.zeros((Ny,Ny*n), dtype=C.dtype)
+    Df=np.zeros((Ny,Ny), dtype=np.float64)
+    Ef=np.zeros((Ny,Ny), dtype=np.float64)
+    #filling data in full matrixes
+    coli=0; k=0 #column and auxiliar indicators
+    for ind in range(0,Ny*n,n):
+        endf=ind+n
+        Af[ind:endf,ind:endf]=A
+        Bf[ind:endf,coli]=np.ravel(B)
+        for rowi in range(coli,Ny):
+            Cf[rowi,(coli)*n:(coli+1)*n]=C[k,:]
+            Cf[coli,(rowi)*n:(rowi+1)*n]=C[k,:]
+            k+=1
+        coli+=1
+    # Generating an upper trinagular matrix from arrays D and E
+    Df[np.triu_indices(Ny)]=D       
+    Ef[np.triu_indices(Ny)]=E
+    # Converting Df and Ef matrixes to full and symmetric matrixes of shape [Ny x Ny] 
+    Df+=Df.T-np.diag(np.diag(Df))   
+    Ef+=Ef.T-np.diag(np.diag(Ef))
+    # Saving new full matrixes in SER:
+    SER["A"]=Af
+    SER["B"]=Bf
+    SER["C"]=Cf
+    SER["D"]=Df
+    SER["E"]=Ef
+    SER["symmData"]=False
+    return SER
+
+def buildRES(SER):
+    """Function to generate the residues matrix of the fitted function computed by vectfit
+        *Returns a tuple with:
+            - R: residue matrixes stacked as a 3D array of shape [Ny x Ny x n]. Ny is the matrix function size and n the aproximation order
+    """
+    # state-space model matrixes in SER:
+    n=SER["A"].shape[0]   # order of aproximation
+    if SER["symmData"] and not(SER["cmplxType"]):
+        # Data needs to be resized to a full matrix representation instead of lower trinagular and element-wise representation
+        #and also the space-state model needs to be converte to a complex
+        SER=tri2full(SER, real2cmplx=True)
 
 # * ----------------------------------------------------------  main vectfit3 function ---------------------------------------------------------- *
 
@@ -761,7 +833,7 @@ def vectfit(F,s,poles,weights,opts=opts):
     C=SERC
     D=SERD
     E=SERE
-    SER=buildSER(A,B,C,D,E,opts["cmplx_ss"])
+    SER=buildSER(A,B,C,D,E,opts["cmplx_ss"],opts["lowert_mat"])
     
     # Vector fitting process finished.
     return (SER,poles,rmserr,fit)

@@ -11,7 +11,7 @@ from scipy.constants import pi
 # 3. Escalar measured response of a transformer 
 # 4. Elementwise aproximation of a 6x6 admitance matrix Y(s)
 
-test=1 # <- Test case selection
+test=4 # <- Test case selection
 
 if test==1:
     print("Test 1: Scalar and artificial frequency domain function f(s)") # -------------------------------------------------------------------- #
@@ -257,6 +257,7 @@ elif test==4:
     opts["spy2"]=False     # Modified to omit graphs generation into the iterative application of vectfit
     opts["phaseplot"]=True # Modified to include the phase angle graph in the results
     opts["skip_res"]=True  # Modified to skip residue computation during the iterative execution of vector fitting
+    opts["cmplx_ss"]=False 
     # Remaining options by default
     
     print("\n * Applying 5 iterations of vector fitting...")
@@ -283,3 +284,6 @@ elif test==4:
         print("     ...",itr+1," iterations applied")
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
+    from vectfit3 import tri2full
+    SER=tri2full(SER, real2cmplx=True)
+    print("\nExpanded SER matrix = \n",SER["C"])
