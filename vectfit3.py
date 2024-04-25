@@ -64,7 +64,7 @@ mpl.rcParams["savefig.dpi"]=300               # saved figure resolution
 # Dictionary which contains the default settings fot vectfit. 
 # Any key can be modified to change som options included in vectfit3
 opts={
-    "lowert_mat" : False, # Indicates when F(s) samples belong to a lower triangular matrix (symmetric problem)
+    "symm_mat"   : False, # Indicates when F(s) samples belong to a lower triangular matrix (symmetric problem)
     "relax"      : True,  # Use vector fitting with relaxed non triviality
     "stable"     : True,  # Enforce stable poles
     "asymp"      : 2,     # Include only D in fitting (not E). See [4]
@@ -280,7 +280,7 @@ def vectfitPlot(F,fit,s,opts,initialState=False):
     plt.show()
       
 # vectfit3() subroutine.
-def buildSER(Ac,Br,Cc,Dr,Er,cmplx_ss,lowert_mat=False):
+def buildSER(Ac,Br,Cc,Dr,Er,cmplx_ss,symm_mat):
     """Function to build the state-space model of the fitted function such as:
         F(s) = C * (sI-A)^-1 * B + D + sE
     
@@ -292,13 +292,13 @@ def buildSER(Ac,Br,Cc,Dr,Er,cmplx_ss,lowert_mat=False):
          - D: Constant terms matrix. Real matrix of shape [Nc x 1]
          - E: Proportional terms matrix. Real matrix of shape [Nc x 1]
          - cmplx_ss: Boolean option from opts{} which indicates if a complex system is needed
-         - lower_mat: Boolean option from opts{} which indicates if data comes from a symmetric problem
+         - symm_mat: Boolean option from opts{} which indicates if data comes from a symmetric matrix problem
         
         Results.
         
          - SER: Dictionary that storages A,B,C,D,E system matrixes adapted as indicated by cmplx_ss 
     """
-    SER=dict(A=Ac,B=Br,C=Cc,D=Dr,E=Er,cmplxType=True,symmData=lowert_mat) #complex state-space system
+    SER=dict(A=Ac,B=Br,C=Cc,D=Dr,E=Er,cmplx_type=True,symm_mat=symm_mat) #complex state-space system
     if not(cmplx_ss):
         # Real state-space system is required so the matrixes are modified
         Ar=np.real(Ac) #importing real poles to Ar
@@ -325,7 +325,7 @@ def buildSER(Ac,Br,Cc,Dr,Er,cmplx_ss,lowert_mat=False):
         SER["A"]=Ar
         SER["B"]=Br
         SER["C"]=Cr
-        SER["cmplxType"]=False
+        SER["cmplx_type"]=False
     return SER
 
 # build_RES() subroutine.
@@ -344,24 +344,22 @@ def tri2full(SER, real2cmplx=False):
     C=SER["C"]
     D=SER["D"]
     E=SER["E"]
-    if real2cmplx and A.dtype==np.float64: # Real to complex transformation is required
+    if real2cmplx and not(SER["cmplx_type"]): # Real to complex transformation is required
         # Complex versions of A and C matrixes:
         Ac=np.zeros(A.shape, dtype=np.complex128)
         Cc=np.zeros(C.shape, dtype=np.complex128)
-        # For complex poles B is a vector of ones:
-        B=np.ones(B.shape, dtype=np.float64)
-        for m in range(A.shape[0]-1):
-            if A[m,m+1]!=0: #case for complex poles
-                Ac[m,m]=A[m,m]+1j*A[m,m+1]          #reference pole 
-                Ac[m+1,m+1]=A[m+1,m+1]-1j*A[m,m+1]  #conjugated pole
-                #ERROR BUILDING C complex
-                Cc[:,m]=C[:,m]+1j*C[:,m+1]          #Reference C value
-                Cc[:,m+1]=np.conj(Cc[:,m])          #Conjugated C value
-            else: #case pure real poles 
+        for m in range(A.shape[0]):
+            if B[m,0]==1: #case for pure real poles
                 Ac[m,m]=A[m,m]
                 Cc[:,m]=C[:,m]
-        #Updating A and C with their complex forms:
+            elif B[m,0]==2: #case for complex poles 
+                Ac[m,m]=A[m,m]+1j*A[m,m+1]          #reference pole 
+                Ac[m+1,m+1]=A[m+1,m+1]+1j*A[m+1,m]  #conjugated pair
+                Cc[:,m]=C[:,m]+1j*C[:,m+1]
+                Cc[:,m+1]=np.conj(Cc[:,m])
+        #Updating arrays with their complex forms:
         A=Ac
+        B=np.ones(B.shape, dtype=np.float64) #for complex poles B is a vector of ones
         C=Cc
     # Unzip process parameters:
     n=B.shape[0]    # Order of approximation
@@ -400,20 +398,34 @@ def tri2full(SER, real2cmplx=False):
     SER["C"]=Cf
     SER["D"]=Df
     SER["E"]=Ef
-    SER["symmData"]=False
+    SER["symm_mat"]=False
     return SER
 
 def buildRES(SER):
     """Function to generate the residues matrix of the fitted function computed by vectfit
-        *Returns a tuple with:
-            - R: residue matrixes stacked as a 3D array of shape [Ny x Ny x n]. Ny is the matrix function size and n the aproximation order
+        *Returns residues matrixes stacked in Res:
+            - Res: a 3D array of shape [Ny x Ny x n]. where Ny is the matrix function size and n the aproximation order
     """
     # state-space model matrixes in SER:
     n=SER["A"].shape[0]   # order of aproximation
-    if SER["symmData"] and not(SER["cmplxType"]):
+    if SER["symm_mat"]:
         # Data needs to be resized to a full matrix representation instead of lower trinagular and element-wise representation
         #and also the space-state model needs to be converte to a complex
         SER=tri2full(SER, real2cmplx=True)
+        C=SER["C"]
+        B=SER["B"]
+        Ny=C.shape[0]
+        Res=np.zeros((Ny,Ny,n), dtype=np.complex128) #Residues matrixes
+        Rk=np.zeros((Ny,Ny), dtype=np.complex128) #Instant Res values
+        i=0 # auxiliar index
+        for k in range(n):
+            Rk[:,:]=0
+            for m in range(Ny):
+                i=m*n+k
+                #in order to perform the correct matrix operation C and B values must be reshaped 
+                Rk+=np.reshape(C[:,i],(Ny,1))@np.reshape(B[i,:],(1,Ny))   
+            Res[:,:,k]=Rk
+    return Res
 
 # * ----------------------------------------------------------  main vectfit3 function ---------------------------------------------------------- *
 
@@ -833,7 +845,7 @@ def vectfit(F,s,poles,weights,opts=opts):
     C=SERC
     D=SERD
     E=SERE
-    SER=buildSER(A,B,C,D,E,opts["cmplx_ss"],opts["lowert_mat"])
+    SER=buildSER(A,B,C,D,E,opts["cmplx_ss"],opts["symm_mat"])
     
     # Vector fitting process finished.
     return (SER,poles,rmserr,fit)

@@ -47,6 +47,7 @@ if test==1:
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
     
+    
 elif test==2:
     print("Test 2: 18th order frequency response F(s) of two dimentions") # -------------------------------------------------------------------- #
     
@@ -252,12 +253,13 @@ elif test==4:
   
     # vector fitting configuration
     from vectfit3 import opts
-    opts["asymp"]=3        # Modified to include D and E in fitting
-    opts["logx"]=False     # Modified to use linear axis for x
-    opts["spy2"]=False     # Modified to omit graphs generation into the iterative application of vectfit
-    opts["phaseplot"]=True # Modified to include the phase angle graph in the results
-    opts["skip_res"]=True  # Modified to skip residue computation during the iterative execution of vector fitting
-    opts["cmplx_ss"]=False 
+    opts["asymp"]=3         # Modified to include D and E in fitting
+    opts["logx"]=False      # Modified to use linear axis for x
+    opts["spy2"]=False      # Modified to omit graphs generation into the iterative application of vectfit
+    opts["phaseplot"]=True  # Modified to include the phase angle graph in the results
+    opts["skip_res"]=True   # Modified to skip residue computation during the iterative execution of vector fitting
+    opts["symm_mat"]=True   # Modified to indicate that F(s) samples belong to the symmetric matrix Y(s)
+    opts["cmplx_ss"]=False  # Modified to create a real only space-state model
     # Remaining options by default
     
     print("\n * Applying 5 iterations of vector fitting...")
@@ -284,6 +286,9 @@ elif test==4:
         print("     ...",itr+1," iterations applied")
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
-    from vectfit3 import tri2full
-    SER=tri2full(SER, real2cmplx=True)
-    print("\nExpanded SER matrix = \n",SER["C"])
+
+    from vectfit3 import buildRES
+    Res=buildRES(SER)
+    print("\nResidues matrixes computed:\n")
+    for k in range(n):
+        print("\n",Res[:,:,k],"\n")
