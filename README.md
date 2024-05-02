@@ -23,7 +23,7 @@ This module **requires numpy, scipy and matplotlib modules installed**. To use t
 ### _vectfit_ configuration
 The vector fitting function has many options that can be modified via _opts_ dictionary. _opts_ dictionary contains the following keys, and each one of them is related to a modifiable option as described:
 
-* **"lowert_mat"**: _type=bool_. Indicates when $F(s)$ samples belong to a lower triangular matrix (symmetric problem).
+* **"symm_mat"**: _type=bool_. Indicates when $F(s)$ samples belong to a symmetric matrix function.
 * **"realx"** _type=bool_. Enables vector fitting with relaxed nontriviality.
 * **"stable"**: _type=bool_. Enables stable poles enforcement.
 * **"asymp"**: _type=int_, value=1, 2 or 3. Produces [D=0; E=0], [D!=0; E=0] or [D!=0; E!=0] respectively[^4].
