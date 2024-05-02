@@ -296,9 +296,9 @@ def buildSER(Ac,Br,Cc,Dr,Er,cmplx_ss,symm_mat):
         
         Results.
         
-         - SER: Dictionary that storages A,B,C,D,E system matrixes adapted as indicated by cmplx_ss 
+         - SER: Dictionary that storages A,B,C,D,E system matrixes adapted as indicated by cmplx_ss and symm_mat
     """
-    SER=dict(A=Ac,B=Br,C=Cc,D=Dr,E=Er,cmplx_type=True,symm_mat=symm_mat) #complex state-space system
+    SER=dict(A=Ac,B=Br,C=Cc,D=Dr,E=Er,cmplx_ss=True,symm_mat=symm_mat) #complex state-space system
     if not(cmplx_ss):
         # Real state-space system is required so the matrixes are modified
         Ar=np.real(Ac) #importing real poles to Ar
@@ -325,7 +325,7 @@ def buildSER(Ac,Br,Cc,Dr,Er,cmplx_ss,symm_mat):
         SER["A"]=Ar
         SER["B"]=Br
         SER["C"]=Cr
-        SER["cmplx_type"]=False
+        SER["cmplx_ss"]=False
     return SER
 
 # build_RES() subroutine.
@@ -344,7 +344,7 @@ def tri2full(SER, real2cmplx=False):
     C=SER["C"]
     D=SER["D"]
     E=SER["E"]
-    if real2cmplx and not(SER["cmplx_type"]): # Real to complex transformation is required
+    if real2cmplx and not(SER["cmplx_ss"]): # Real to complex transformation is required
         # Complex versions of A and C matrixes:
         Ac=np.zeros(A.shape, dtype=np.complex128)
         Cc=np.zeros(C.shape, dtype=np.complex128)
@@ -732,7 +732,7 @@ def vectfit(F,s,poles,weights,opts=opts):
                 A[N:2*N,:]=Dk.imag
             elif opts["asymp"]==2:
                 A=np.zeros((2*N,n+1),dtype=np.float64)
-                A[0:N,:]=Dk.real
+                A[0:N,0:n]=Dk.real
                 A[N:2*N,0:n]=Dk.imag
                 A[0:N,n]=weights
             else:
@@ -775,7 +775,7 @@ def vectfit(F,s,poles,weights,opts=opts):
                     A[N:2*N,:]=Dk.imag
                 elif opts["asymp"]==2:
                     A=np.zeros((2*N,n+1),dtype=np.float64)
-                    A[0:N,:]=Dk.real
+                    A[0:N,0:n]=Dk.real
                     A[N:2*N,0:n]=Dk.imag
                     A[0:N,n]=1
                 else: #for asymp==3
