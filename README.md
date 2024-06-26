@@ -24,6 +24,7 @@ This module **requires numpy, scipy and matplotlib modules installed**. To use t
 The vector fitting function has many options that can be modified via _opts_ dictionary. _opts_ dictionary contains the following keys, and each one of them is related to a modifiable option as described:
 
 * **"symm_mat"**: _type=bool_. Indicates when $F(s)$ samples belong to a symmetric matrix function.
+* **"RMO_data"**: _type=bool_. Indicates when matrix function elements are arranged in RMO into F(s)
 * **"realx"** _type=bool_. Enables vector fitting with relaxed nontriviality.
 * **"stable"**: _type=bool_. Enables stable poles enforcement.
 * **"asymp"**: _type=int_, value=1, 2 or 3. Produces [D=0; E=0], [D!=0; E=0] or [D!=0; E!=0] respectively[^4].
@@ -43,6 +44,7 @@ Default options of vector fitting are already defined into vectfit3.py module. T
     opts={
         "symm_mat"   : False, # F(s) samples belong to a full matrix
         "relax"      : True,  # Use vector fitting with relaxed non triviality
+        "RMO_data"   : True,  # Matrix elements are organized in RMO into F(s) (asymmetric problems)
         "stable"     : True,  # Enforce stable poles
         "asymp"      : 2,     # Include only D in fitting (not E).
         "skip_pole"  : False, # Do NOT skip pole identification
@@ -57,7 +59,7 @@ Default options of vector fitting are already defined into vectfit3.py module. T
         "legend"     : True,  # Do include legends in plots
         }
 
-To change any option _opts_ dictionary can be imported from the module and edited as shown below:
+To change any option, _opts_ dictionary can be imported from the module and edited as shown below:
 
     from vectfit3 import opts
     opts["asymp"]=3        # Modified to include D and E in fitting
@@ -119,6 +121,7 @@ This repository also includes a sample code "_vectfit_testing.py_", with some te
  * 18th order fitting of a two-dimensional frequency response F(s)
  * Fitting of frequency domain samples imported from the measured frequency response of a transformer. **TRANSF_DATA.csv** is needed
  * Element wise approximation of an admitance matrix computed from an equivalent power distribution network. **SYSADMITANCE_DATA.csv** is needed. For more details see[^4]
+ * Approximation of a 3x3 propagation matrix of an aerial transmission line. This matrix function corresponds to a single porpagation mode and time delay is already extrated. Requires **MODEH_DATA.csv**
 
 In the following figures vector fitting results for some test cases are shown:
 
@@ -136,18 +139,17 @@ In the following figures vector fitting results for some test cases are shown:
     
     - All options for _vectfit3_ configuration are defined as boolean variables, except asymp which has 3 possible states.
     - The new option "symm_mat" for _vectfit3_ configuration is added. This indicates when $F(s)$ samples belong to a symmetric matrix function in CMO. This is a common practice because it reduces the number of elements to fit. See test 4
+    - A new option, "RMO_data" is added for vecfit3 configuration. This shows that elements of an asymmetric matrix function are saved in Row Major Order into F(s), set as false for CMO. See test 5
     - A new method to sort the poles computed during the identification process is implemented.
     - Real and complex data is meticulously treated and differentiated through the entire process.
     - General code organization.
     - A new method to compute error plots is implemented. The new error is $log_{10}(error_{relative})$
     - Error graphs are now plotted outside the magnitude axis as a subplot in the same figure.
-    - Now "cmplx_ss" and "symm_mat" flags are also members of SER "dictionary". This is helpful when using the space-state model in external post-processing routines.
-    - ss2pr() subroutine is renamed as buildRES() and is modified to return just the residues matrixes, because poles are already given by vectfit() main function.
-    - tri2full subroutine, which is used to transform compressed results of a symmetric problem, is now internally called from buildRES() prior to compute residue matrixes. However can be imported from the module if it is needed.
+    - Now "cmplx_ss", "symm_mat" and "RMO_data" flags are also members of SER "dictionary". This is helpful when using the space-state model in external post-processing routines.
+    - ss2pr() function is replaced by to buildRES(). The new function only computes residue matrices because vectfit already returns the poles. 
+    - The tri2full() function has been renamed to flat2full(). Additionally, it has been modified to handle asymmetric matrix problems.
 
-### In development
-Nowadays, some final details in _vectfit3.py_ are still in progress:
-* _"buildRES()"_ function that computes residues matrixes from SER, only considers symmetric data reduction. Therefore a subroutine to map the results from element-wise representation "vectfit default" to a full matrix representation, when original data belong to a non-symmetric matrix function must be created. This function should take into account the mapping method used, for instance Column Major Order (CMO) and Row Major Order (RMO).
+## Contributions and development
 
 To contribute, give suggestions or report any bug please contact me:
  * Sebastian Loaiza Elejalde
