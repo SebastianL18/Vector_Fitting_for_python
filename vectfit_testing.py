@@ -7,11 +7,12 @@ from scipy.constants import pi
 
 # Example to be applied:
 # 1. Scalar and artificial frequency domain function f(s)
-# 2. 18th order approximation of a frequency response F(s) of two dimentions
+# 2. 18th order approximation of a frequency response F(s) with 2 elements
 # 3. Escalar measured response of a transformer 
-# 4. Elementwise aproximation of a 6x6 admitance matrix Y(s)
+# 4. Elementwise approximation of a 6x6 admitance matrix Y(s)
+# 5. Approximation of a 3x3 propagation matrix of an aerial transmission line H(s)
 
-test=4 # <- Test case selection
+test=5 # <- Test case selection
 
 if test==1:
     print("Test 1: Scalar and artificial frequency domain function f(s)") # -------------------------------------------------------------------- #
@@ -201,7 +202,7 @@ elif test==3:
     print("\nFinal poles computed:\n",poles)
     
 elif test==4:
-    print("Test 4: Elementwise aproximation of a 6x6 admitance matrix") # --------------------------------------------------------------------------------- #
+    print("Test 4: Elementwise approximation of a 6x6 admitance matrix") # --------------------------------------------------------------------------------- #
     # Importing measured data from a .csv file (SYSADMITANCE_DATA.csv)
     csv_path=r"C:\Users\Sebastian\Documents\GitHub\Vector_Fitting_for_python\SYSADMITANCE_DATA.csv" #local path! Update with your own path
     Mdata=pd.read_csv(csv_path)                         # Measured data
@@ -229,7 +230,7 @@ elif test==4:
             F[k,:]=Ysys[row,col,:] #all samples are in z axis
             k+=1
             
-    print("\nFrequency domain samples of f(s) = \n",F)
+    print("\nFrequency domain samples of F(s) = \n",F)
     print("f(s) shape = ",F.shape, "\ndata type in f(s) = ",type(F),type(F[0,0]))
     
     weights=1/np.sqrt(np.abs(F)) # Weighting with inverse of the square root of the magnitude of F(s)
@@ -259,23 +260,21 @@ elif test==4:
     opts["phaseplot"]=True  # Modified to include the phase angle graph in the results
     opts["skip_res"]=True   # Modified to skip residue computation during the iterative execution of vector fitting
     opts["symm_mat"]=True   # Modified to indicate that F(s) samples belong to the symmetric matrix Y(s)
-    opts["cmplx_ss"]=False  # Modified to create a real only space-state model
+    opts["cmplx_ss"]=True   # Modified to create a complex space-state model (Diagonal A)
     # Remaining options by default
     
     print("\n * Applying 5 iterations of vector fitting...")
     Niter=5 #number of iterations
     for itr in range(Niter):
         if itr==Niter-1:
-            #opts["spy2"]=True       #enabling graphs for the results
             opts["skip_res"]=False  #enabling residue computation in the final iteration
-        (SER,poles,rmserr,fit)=vectfit(g,s,poles,weights_g,opts)
+        (_,poles,rmserr,_)=vectfit(g,s,poles,weights_g,opts)
         print("     ...",itr+1," iterations applied")
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nInitial poles computed from weighted column sum of Y(s):\n",poles)
     
     # Final fitting with new initial poles set and all elementos of Y(s) in F(s)
     opts["skip_res"]=True  # Modified to skip residue computation during the iterative execution of vector fitting
-    opts["spy2"]=False     # Modified to omit graphs generation into the iterative application of vectfit
 
     Niter=3 #number of iterations
     for itr in range(Niter):
@@ -287,8 +286,113 @@ elif test==4:
     print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
     print("\nFinal poles computed:\n",poles)
 
-    from vectfit3 import buildRES
-    Res=buildRES(SER)
+    from vectfit3 import buildRES, flat2full
+    SER=flat2full(SER)                  #transforming flattened and compressed data structure of SER to a full matrix representation
+    Res=buildRES(SER["C"], SER["B"])    #computing residue matrixes of the fitted function
     print("\nResidues matrixes computed:\n")
     for k in range(n):
         print("\n",Res[:,:,k],"\n")
+     
+elif test==5:
+    print("Test 5: Elementwise approximation of a 3x3 propagation matrix of an aerial transmission line.\nIt corresponds to single propagation mode and time delay is already extracted.") 
+    # Importing data from a .csv file (lineConstants_H0.csv)
+    csv_path=r"C:\Users\Sebastian\Documents\GitHub\Vector_Fitting_for_python\MODEH_DATA.csv" #local path! Update with your own path
+    # Pandas data frame with H(w) samples in the frequency domain:
+    #Columns organization: index , OMEGA(Ang. frequency), H_00REAL(1st element's real part), H_00IMAG(1st element's imaginary part), ... H_01REAL(2nd element's real part), ...
+    Hdata=pd.read_csv(csv_path)
+    w=np.ravel(Hdata.loc[:,"OMEGA"].to_numpy()) # Angular frequency samples
+    s=1j*w                                      # Complex frequency samples
+    N=w.size                                    # Number of samples
+    Hw=np.zeros((3,3,N),dtype=np.complex128)    # Propagation matrix in the frequency domain
+    #Copying data into H:
+    k=2
+    for row in range(3):
+        for col in range(3):
+            Hw[row,col,:]=np.ravel(Hdata.iloc[:,k].to_numpy())+1j*np.ravel(Hdata.iloc[:,k+1].to_numpy()) #elements are read in RMO
+            k+=2
+    
+    # Stacking H(s) data as elements of a frequency domain function F(s). 
+    # Due to H(s) is asymmetric, F(s) is a flattened version of H(s). Row Major Ordering is used to map H(s) elements into F(s)     
+    F=np.zeros((3*3, N), dtype=np.complex128)
+    k=0 #element index
+    for row in range(3):
+        for col in range(3):
+            F[k,:]=Hw[row,col,:] #all frequency samples are in z axis
+            k+=1
+    
+    print("\nFrequency domain samples of F(s) = \n",F)
+    print("f(s) shape = ",F.shape, "\ndata type in f(s) = ",type(F),type(F[0,0]))
+    
+    weights=np.ones(N, dtype=np.float64)    # No samples weighting
+    n=35                                    # Order of approximation
+    # Starting poles generation:
+    Bet=np.logspace(np.log10(w[0]),np.log10(w[N-1]),int(n/2))
+    poles=np.zeros(n,dtype=np.complex128)
+    #setting poles as complex conjugated pairs
+    for k in range(int(n/2)):
+        alf=-Bet[k]/100
+        poles[2*k]=alf-1j*Bet[k]
+        poles[2*k+1]=alf+1j*Bet[k]
+    
+    print("A set of initial poles are obtained by fitting trace of Hi\n * Applying 10 iterations of vector fitting...")
+    # Using H trace to identify initial poles:
+    trH=np.zeros(N, dtype=np.complex128)
+    for k in range(3):
+       trH=trH+Hw[k,k,:]
+    
+    # vector fitting configuration
+    from vectfit3 import opts
+    opts["asymp"]=1         # Modified to omit D and E in fitting
+    opts["logy"]=False      # Modified to set y axis in logarithmic distribution
+    opts["spy2"]=False      # Modified to omit graphs generation into the iterative application of vectfit
+    opts["phaseplot"]=True  # Modified to include the phase angle graph in the results
+    opts["skip_res"]=True   # Modified to skip residue computation during the iterative execution of vector fitting
+    opts["cmplx_ss"]=True  # Modified to create a real space-state model
+    # Remaining options by default
+    
+    Niter=10 #number of iterations
+    for itr in range(Niter):
+        if itr==Niter-1:
+            #opts["spy2"]=True       #enabling graphs for the results
+            opts["skip_res"]=False  #enabling residue computation in the final iteration
+        (_,poles,rmserr,_)=vectfit(trH,s,poles,weights,opts)
+        print("     ...",itr+1," iterations applied")
+    print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
+    print("\nInitial poles computed from trace of H(s):\n",poles)
+    
+    # Final fitting with computed initial poles and all elementos of H(s) in F(s)
+    opts["skip_res"]=True  # Modified to skip residue computation during the iterative execution of vector fitting
+
+    Niter=10 #number of iterations
+    for itr in range(Niter):
+        if itr==Niter-1:
+            opts["spy2"]=True       #enabling graphs for the results
+            opts["skip_res"]=False  #enabling residue computation in the final iteration
+        (SER,poles,rmserr,fit)=vectfit(F,s,poles,weights,opts)
+        print("     ...",itr+1," iterations applied")
+    print(" v/ Fitting process completed. Aproximation error achieved = ",rmserr)
+    print("\nFinal poles computed:\n",poles)
+    
+    from vectfit3 import buildRES, flat2full
+    SER=flat2full(SER)      #transforming flattened and compressed data structure of SER to a full matrix representation
+    Res=buildRES(SER["C"], SER["B"])  #computing residue matrixes of the fitted function
+    print("\nResidues matrixes computed:\n")
+    for k in range(n):
+        print("\n",Res[:,:,k],"\n")
+        
+    # Comprobation. Building fitted function from pole-residue representation:
+    d=SER["D"]
+    e=SER["E"]
+    Ffit=np.zeros(fit.shape, dtype=np.complex128)
+    k=0 # element index
+    for row in range(3):
+        for col in range(3):
+            for m in range(n):
+                Ffit[k,:]=Ffit[k,:]+(Res[row,col,m]/(s-poles[m])+d[row,col]+s*e[row,col])
+            k+=1
+    # Computing the relative error between vectfit fitted function and the function computed from poles and residues
+    relError=np.abs(Ffit-fit)/np.abs(fit)
+    if np.any(relError>1e-10):
+        print("\n *** ERRORS found in reconstructing the fitted function from poles-residues model ***")
+    else:
+        print("\n *** NO ERRORS found in reconstructing the fitted function from poles-residues model ***")
