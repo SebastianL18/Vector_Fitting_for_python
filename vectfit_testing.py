@@ -292,7 +292,25 @@ elif test==4:
     print("\nResidues matrixes computed:\n")
     for k in range(n):
         print("\n",Res[:,:,k],"\n")
-     
+    
+    # Comprobation. Building fitted function from pole-residue representation:
+    d=SER["D"]
+    e=SER["E"]
+    Ffit=np.zeros(fit.shape, dtype=np.complex128)
+    k=0 # element index
+    for col in range(6):
+        for row in range(col,6):
+            for m in range(n):
+                Ffit[k,:]=Ffit[k,:]+(Res[row,col,m]/(s-poles[m]))
+            Ffit[k,:]=Ffit[k,:]+d[row,col]+s*e[row,col]
+            k+=1
+    # Computing the relative error between vectfit fitted function and the function computed from poles and residues
+    relError=np.abs(Ffit-fit)/np.abs(fit)
+    if np.any(relError>1e-10):
+        print("\n *** ERRORS found in reconstructing the fitted function from poles-residues model ***")
+    else:
+        print("\n *** NO ERRORS found in reconstructing the fitted function from poles-residues model ***")
+
 elif test==5:
     print("Test 5: Elementwise approximation of a 3x3 propagation matrix of an aerial transmission line.\nIt corresponds to single propagation mode and time delay is already extracted.") 
     # Importing data from a .csv file (lineConstants_H0.csv)
@@ -388,7 +406,8 @@ elif test==5:
     for row in range(3):
         for col in range(3):
             for m in range(n):
-                Ffit[k,:]=Ffit[k,:]+(Res[row,col,m]/(s-poles[m])+d[row,col]+s*e[row,col])
+                Ffit[k,:]=Ffit[k,:]+(Res[row,col,m]/(s-poles[m]))
+            Ffit[k,:]=Ffit[k,:]+d[row,col]+s*e[row,col]
             k+=1
     # Computing the relative error between vectfit fitted function and the function computed from poles and residues
     relError=np.abs(Ffit-fit)/np.abs(fit)
