@@ -406,16 +406,16 @@ def flat2full(SER):
             Af[ind:endf,ind:endf]=A
             Bf[ind:endf,coli]=np.ravel(B)
             if SER["RMO_data"]: #data is organized in Row Major Order (default)
-                Df[coli,:]=D[coli*Ny:(coli+1)*Ny]
-                Ef[coli,:]=E[coli*Ny:(coli+1)*Ny]
-                for rowi in range(0,Ny):
-                    Cf[coli,(rowi)*n:(rowi+1)*n]=C[k,:]
-                    k+=1
-            else: #data is organized in Column Major Order (transpose filling to iterate colums faster)
                 Df[:,coli]=D[coli*Ny:(coli+1)*Ny]
                 Ef[:,coli]=E[coli*Ny:(coli+1)*Ny]
                 for rowi in range(0,Ny):
                     Cf[rowi,(coli)*n:(coli+1)*n]=C[k,:]
+                    k+=1
+            else: #data is organized in Column Major Order (transpose filling to iterate colums faster)
+                Df[coli,:]=D[coli*Ny:(coli+1)*Ny]
+                Ef[coli,:]=E[coli*Ny:(coli+1)*Ny]
+                for rowi in range(0,Ny):
+                    Cf[coli,(rowi)*n:(rowi+1)*n]=C[k,:]
                     k+=1
             coli+=1
     SER["A"]=Af
