@@ -305,7 +305,7 @@ elif test==4:
             Ffit[k,:]=Ffit[k,:]+d[row,col]+s*e[row,col]
             k+=1
     # Computing the relative error between vectfit fitted function and the function computed from poles and residues
-    relError=np.abs(Ffit-fit)/np.abs(fit)
+    relError=np.abs(Ffit-fit)/np.abs(fit).max()
     if np.any(relError>1e-10):
         print("\n *** ERRORS found in reconstructing the fitted function from poles-residues model ***")
     else:
@@ -410,7 +410,7 @@ elif test==5:
             Ffit[k,:]=Ffit[k,:]+d[row,col]+s*e[row,col]
             k+=1
     # Computing the relative error between vectfit fitted function and the function computed from poles and residues
-    relError=np.abs(Ffit-fit)/np.abs(fit)
+    relError=np.abs(Ffit-fit)/np.abs(fit).max()
     if np.any(relError>1e-10):
         print("\n *** ERRORS found in reconstructing the fitted function from poles-residues model ***")
     else:
