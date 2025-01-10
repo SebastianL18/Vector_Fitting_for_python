@@ -127,11 +127,15 @@ In the following figures vector fitting results for some test cases are shown:
 
  * Plots obtained from test case 2: Fitting of a two-dimensional function with 18 poles.
 
-![Test2_Results](https://github.com/SebastianL18/vectfit3_for_python/assets/144065519/dba65a2b-2136-4d8b-b0f3-2dbc7fdb541c)
+![Example2Results](https://github.com/user-attachments/assets/d47ddc39-7102-47b5-a35f-1ee374b61d6f)
 
  * Plots obtained from test case 4: Element wise approximation of an admittance matrix with 21 elements and using 50 poles.
 
-![Test4_Results](https://github.com/SebastianL18/vectfit3_for_python/assets/144065519/cda02edb-b5db-46b5-899d-81c718c5c369)
+![Example4Results](https://github.com/user-attachments/assets/a365b6b4-80ab-4981-887e-47683172d549)
+
+* Plots obtained from test case 5: Approximation of a 3x3 propagation matrix of an aerial transmission line.
+
+![Example5Results](https://github.com/user-attachments/assets/972c5d79-3f57-4c17-b98f-1a419aa168c0)
 
 ## Changes in this version of the algorithm
 
