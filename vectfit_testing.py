@@ -225,8 +225,8 @@ elif test==4:
     # Due to Y(s) is symmetric only the members into the lower trinagular submatrix Y(s) are taken    
     F=np.zeros((21,N), dtype=np.complex128)
     k=0 #element index
-    for col in range(6):
-        for row in range(col,6):
+    for row in range(6):
+        for col in range(row,6):
             F[k,:]=Ysys[row,col,:] #all samples are in z axis
             k+=1
             
@@ -298,8 +298,8 @@ elif test==4:
     e=SER["E"]
     Ffit=np.zeros(fit.shape, dtype=np.complex128)
     k=0 # element index
-    for col in range(6):
-        for row in range(col,6):
+    for row in range(6):
+        for col in range(row,6):
             for m in range(n):
                 Ffit[k,:]=Ffit[k,:]+(Res[row,col,m]/(s-poles[m]))
             Ffit[k,:]=Ffit[k,:]+d[row,col]+s*e[row,col]

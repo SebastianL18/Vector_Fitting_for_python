@@ -1,7 +1,7 @@
 # vectfit3.py module.
 
 """
-*** FastRelaxed Vector Fitting for Python v1.1***
+*** FastRelaxed Vector Fitting for Python v1.3***
 
 vectfit3.py is the implementation of Fast Relaxed Vector Fitting algortihm on python. The original code was written 
 in Matlab eviroment. The pourpose of this algorithm is to compute a rational approximation from tabuled data in the 
@@ -10,7 +10,7 @@ or pole-residue form.
 
     - Original Matlab code autor: Bjorn Gustavsen (08/2008)
     - Transcripted and adapted by: Sebastian Loaiza (03/2024)
-    - Last revision by: Sebastian Loaiza (06/2024)
+    - Last revision by: Sebastian Loaiza (01/2025)
 
  * References:
  
@@ -58,21 +58,21 @@ from scipy.constants import pi
 # Dictionary which contains the default settings fot vectfit. 
 # Any key can be modified to change som options included in vectfit3
 opts={
-    "symm_mat"   : False, # Indicates when F(s) samples belong to a lower triangular matrix (symmetric problems)
-    "RMO_data"   : True,  # Matrix elements are organized in RMO into F(s) (asymmetric problems)
-    "relax"      : True,  # Use vector fitting with relaxed non triviality
-    "stable"     : True,  # Enforce stable poles
-    "asymp"      : 2,     # Include only D in fitting (not E). See [4]
-    "skip_pole"  : False, # Do NOT skip pole identification
-    "skip_res"   : False, # Do NOT skip residues identification (C,D,E). See [4]
-    "cmplx_ss"   : True,  # Create complex state space model
-    "spy1"       : False, # No plotting for first stage of vector fitting
-    "spy2"       : True,  # Create magnitude plot for fitting of f(s)
-    "logx"       : True,  # Use logarithmic axis for x
-    "logy"       : True,  # Use logarithmic axis for y
-    "errplot"    : True,  # Include deviation in magnitude plot
-    "phaseplot"  : False, # Exclude plot of phase angle
-    "legend"     : True,  # Do include legends in plots
+    "symm_mat"  : False,                    # Indicates when F(s) samples belong to a lower triangular matrix (symmetric problems)
+    "RMO_data"  : True,                     # Matrix elements are organized in RMO into F(s) (asymmetric problems)
+    "relax"     : True,                     # Use vector fitting with relaxed non triviality
+    "stable"    : True,                     # Enforce stable poles
+    "asymp"     : 2,                        # Include only D in fitting (not E). See [4]
+    "skip_pole" : False,                    # Do NOT skip pole identification
+    "skip_res"  : False,                    # Do NOT skip residues identification (C,D,E). See [4]
+    "cmplx_ss"  : True,                     # Create complex state space model
+    "spy1"      : False,                    # No plotting for first stage of vector fitting
+    "spy2"      : True,                     # Create magnitude plot for fitting of f(s)
+    "logx"      : True,                     # Use logarithmic axis for x
+    "logy"      : True,                     # Use logarithmic axis for y
+    "errplot"   : True,                     # Include deviation in magnitude plot
+    "phaseplot" : False,                    # Exclude plot of phase angle
+    "legend"    : True                      # Do include legends in plots
     }
 
 ### ----------------------------------------------------------------- Functions --------------------------------------------------------------- ###
@@ -177,7 +177,7 @@ def sortPoles(poles):
     return np.append(realpoles,complexpoles)
 
 # vectfit() subroutine.
-def vectfitPlot(F,fit,s,opts,initialState=False):
+def vectfitPlot(F,fit,s,opts, initialState=False, titleLabel="Vector Fitting Resutls"):
     """Function to plot vector fitting results. 
        The number of graphs that are displayed varies in function of opts configuration
        
@@ -197,18 +197,19 @@ def vectfitPlot(F,fit,s,opts,initialState=False):
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     #matplotlib configuration:
-    plt.rcParams["font.family"]="Times New Roman" # font type
-    mpl.rcParams["font.size"]=9                   # font size in points
-    mpl.rcParams["figure.dpi"]=100                # canvas figure resolution
-    mpl.rcParams["savefig.dpi"]=300               # saved figure resolution
-    
+    plt.rcParams["font.family"]="serif"             # font type
+    plt.rcParams["mathtext.fontset"]="dejavuserif"  # font type in math expressions
+    mpl.rcParams["font.size"]=10                    # font size in points
+    mpl.rcParams["figure.dpi"]=100                  # canvas figure resolution
+    mpl.rcParams["savefig.dpi"]=300                 # saved figure resolution
+
     freq=np.real(s/(2*pi*1j))
     # LogLog plots: Graphs with logarithmic x and y axis
     if opts["errplot"]:
         fig1,ax1=plt.subplots(2,1)
         l1=ax1[0].plot(freq,np.abs(F.T),color='c',linewidth=1.2)
         l2=ax1[0].plot(freq,np.abs(fit.T),color='k',linewidth=1.3,linestyle="dashed")
-        ax1[0].set(xlabel="Frequency (Hz)", ylabel="Magnitude",title="Vector Fitting results")
+        ax1[0].set(xlabel="Frequency (Hz)", ylabel="Magnitude",title=titleLabel)
         if opts["legend"]:
             l2[0].set(label="Fitted function")
             l1[0].set(label="F(s) samples")
@@ -216,10 +217,17 @@ def vectfitPlot(F,fit,s,opts,initialState=False):
         ax1[0].grid(True)
         #logarithmic error computation
         logError=np.zeros(F.shape,dtype=np.float64)
+        maxError=-1e10
         for i in range(F.shape[0]):
             logError[i]=np.log10(np.abs(F[i]-fit[i])/np.max(np.abs(F[i])))
-        ax1[1].plot(freq,logError.T,color='r',linewidth=1.2)
-        ax1[1].set(xlabel="Frequency (Hz)", ylabel="log10(relative error)")
+            error=logError[i].max()
+            if error>maxError: maxError=error
+        maxLabel=ax1[1].plot(freq,logError.T,color='r',linewidth=1.2)
+        maxError=(10**maxError)*100
+        maxLabel[0].set(label="Max fitting error = "+str(maxError)+"%")
+        print("         * max fitting error = "+str(maxError)+"% *")
+        ax1[1].set(xlabel="Frequency (Hz)", ylabel=r"$\log_{10}$(relative error)")
+        ax1[1].legend()
         ax1[1].grid(True)
     else:
         if initialState:
@@ -227,7 +235,7 @@ def vectfitPlot(F,fit,s,opts,initialState=False):
             tlabel="Vector Fitting initial state"
         else:
             flabel="Fitted function"
-            tlabel="Vector Fitting results"
+            tlabel=titleLabel
         fig1,ax1=plt.subplots()
         l1=ax1.plot(freq,np.abs(F.T),color='c',linewidth=1.2,label="F(s) samples")
         l2=ax1.plot(freq,np.abs(fit.T),color='k',linewidth=1.3,linestyle="dashed")
@@ -244,7 +252,7 @@ def vectfitPlot(F,fit,s,opts,initialState=False):
         fig2,ax2=plt.subplots()
         l3=ax2.plot(freq,F_angle.T,color='c',linewidth=1.2)
         l4=ax2.plot(freq,fit_angle.T,color='k',linewidth=1.3,linestyle="dashed")
-        ax2.set(xlabel="Frequency (Hz)", ylabel="Phase angle (deg)",title="Vector Fitting results")
+        ax2.set(xlabel="Frequency (Hz)", ylabel="Phase angle (deg)",title=titleLabel)
         if opts["legend"]:
             l3[0].set(label="F(s) samples")
             l4[0].set(label="Fitted function")
@@ -360,11 +368,11 @@ def flat2full(SER):
     Nc=C.shape[0]   # Number of different elements in the flattened problem
     if SER["symm_mat"]:
         # Case for a symmetric problem, data must be decompressed and organized in symmetric format
-        sum=0           # Sum counter
+        zum=0           # Sum counter
         Ny=0            # Shape of the full unzipped matrix function
-        while sum<Nc:
+        while zum<Nc:
             Ny+=1
-            sum+=Ny
+            zum+=Ny
         # Full versions of the space-state system
         Af=np.zeros((Ny*n,Ny*n), dtype=A.dtype)
         Bf=np.zeros((Ny*n,Ny), dtype=np.float64)
@@ -406,16 +414,16 @@ def flat2full(SER):
             Af[ind:endf,ind:endf]=A
             Bf[ind:endf,coli]=np.ravel(B)
             if SER["RMO_data"]: #data is organized in Row Major Order (default)
-                Df[:,coli]=D[coli*Ny:(coli+1)*Ny]
-                Ef[:,coli]=E[coli*Ny:(coli+1)*Ny]
-                for rowi in range(0,Ny):
-                    Cf[rowi,(coli)*n:(coli+1)*n]=C[k,:]
-                    k+=1
-            else: #data is organized in Column Major Order (transpose filling to iterate colums faster)
                 Df[coli,:]=D[coli*Ny:(coli+1)*Ny]
                 Ef[coli,:]=E[coli*Ny:(coli+1)*Ny]
                 for rowi in range(0,Ny):
                     Cf[coli,(rowi)*n:(rowi+1)*n]=C[k,:]
+                    k+=1
+            else: #data is organized in Column Major Order (transpose filling to iterate colums faster)
+                Df[:,coli]=D[coli*Ny:(coli+1)*Ny]
+                Ef[:,coli]=E[coli*Ny:(coli+1)*Ny]
+                for rowi in range(0,Ny):
+                    Cf[rowi,(coli)*n:(coli+1)*n]=C[k,:]
                     k+=1
             coli+=1
     SER["A"]=Af
@@ -469,7 +477,7 @@ def buildRES(SERC, SERB):
 
 # * ----------------------------------------------------------  main vectfit3 function ---------------------------------------------------------- *
 
-def vectfit(F,s,poles,weights,opts=opts):
+def vectfit(F,s,poles,weights,opts=opts, graphsTitle="Vector Fitting Results"):
     """ 
     vectfit(): Function to compute a rational aproximation in the frequency domain with the 
     Fast Relaxed Vector Fitting algorithm. Should be used recursively to achieve the best fit.
@@ -693,7 +701,7 @@ def vectfit(F,s,poles,weights,opts=opts):
                 C[m+1]=r1-1j*r2
         # Graphs of initial stage of vector fitting process
         if opts["spy1"]:
-            print("\nvectfit3::spy1_Enabled::Building and showing graph for initial fitting state...")
+            print("\n...vectfit3::spy1_Enabled::Building and showing graph for initial fitting state...")
             # First fitting state evaluation: 
             # As mentioned in [1] pole identification begins with the aproximation of sigma(s). sigma(s) is an unknown function whose  
             #approximation has the same poles of F(s). Furtheremore it is formulated that (sigma*f)_fit(s) = sigma_fit*f(s), whence can be
@@ -706,7 +714,7 @@ def vectfit(F,s,poles,weights,opts=opts):
             opts_temp=opts
             opts_temp["errplot"]=False
             opts_temp["phaseplot"]=False
-            vectfitPlot(F,sigma,s,opts_temp,True)
+            vectfitPlot(F,sigma,s,opts_temp,initialState=True)
         # Calculating the zeros for sigma
         m=0 #auxiliar counter
         for k in range(n):
@@ -876,8 +884,9 @@ def vectfit(F,s,poles,weights,opts=opts):
         
         # - Graphs generation for vector fitting results:
         if opts["spy2"]:
-            print("\nvectfit3::spy2_Enabled::Building and showing graphs for the results...")
-            vectfitPlot(F,fit,s,opts)
+            print("\n...vectfit3::spy2_Enabled::Building and showing graphs for the results...")
+            vectfitPlot(F,fit,s,opts,titleLabel=graphsTitle)
+            print("         * rms error = "+str(rmserr)+" *")
     #...end of residue identification process
     
     # - Building the state-space model
