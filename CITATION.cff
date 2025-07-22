@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, you can cite it as below"
+authors:
+- family-names: "Loaiza-Elejalde"
+  given-names: "Sebastian"
+  orcid: "https://orcid.org/0000-0002-0137-4376"
+title: "Vector Fitting implementation for Python"
+version: 1.3.0
+date-released: 2024-04-15
+url: "https://github.com/SebastianL18/Vector_Fitting_for_python"
