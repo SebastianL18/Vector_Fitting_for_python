@@ -1,7 +1,7 @@
 # vectfit3.py module.
 
 """
-*** FastRelaxed Vector Fitting for Python v1.3***
+*** FastRelaxed Vector Fitting for Python v1.3.1***
 
 vectfit3.py is the implementation of Fast Relaxed Vector Fitting algortihm on python. The original code was written 
 in Matlab eviroment. The pourpose of this algorithm is to compute a rational approximation from tabuled data in the 
@@ -45,6 +45,7 @@ or pole-residue form.
       depending on the status of "lower_mat" and "RMO_data" flags.
     - ss2pr() function is replaced by to buildRES(). The new function just compute residues matrixes becouse vectfit returns 
       the poles already.
+    - Relative deviations are now computed taking as reference the maximum magnitude value in the reference function 
 """
 
 # Scientific computing modules:
@@ -199,7 +200,7 @@ def vectfitPlot(F,fit,s,opts, initialState=False, titleLabel="Vector Fitting Res
     #matplotlib configuration:
     plt.rcParams["font.family"]="serif"             # font type
     plt.rcParams["mathtext.fontset"]="dejavuserif"  # font type in math expressions
-    mpl.rcParams["font.size"]=10                    # font size in points
+    mpl.rcParams["font.size"]=14                    # font size in points
     mpl.rcParams["figure.dpi"]=100                  # canvas figure resolution
     mpl.rcParams["savefig.dpi"]=300                 # saved figure resolution
 
@@ -219,7 +220,7 @@ def vectfitPlot(F,fit,s,opts, initialState=False, titleLabel="Vector Fitting Res
         logError=np.zeros(F.shape,dtype=np.float64)
         maxError=-1e10
         for i in range(F.shape[0]):
-            logError[i]=np.log10(np.abs(F[i]-fit[i])/np.max(np.abs(F[i])))
+            logError[i]=np.log10(np.abs(F[i]-fit[i])/np.max(np.abs(F)))
             error=logError[i].max()
             if error>maxError: maxError=error
         maxLabel=ax1[1].plot(freq,logError.T,color='r',linewidth=1.2)
